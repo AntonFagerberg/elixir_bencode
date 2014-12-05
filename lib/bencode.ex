@@ -52,6 +52,6 @@ defmodule Bencode do
   def encode(data) when is_list(data), do: Enum.reduce(data, "l", &(&2 <> encode(&1))) <> "e"
   def encode(data) when is_map(data), do: Enum.reduce(data, "d", &(&2 <> encode(&1))) <> "e"
   def encode({k, v}), do: encode(k) <> encode(v)
-  def encode(data) when is_atom(data), do: Atom.to_string(data)
+  def encode(data) when is_atom(data), do: encode(Atom.to_string(data))
   def encode(data), do: (data |> String.length |> Integer.to_string) <> ":" <> data
 end

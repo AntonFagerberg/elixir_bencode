@@ -87,6 +87,10 @@ defmodule BencodeTest do
     assert "4:spam" === encode("spam")
   end
   
+  test "Encode atom" do
+    assert "4:spam" === encode(:spam)
+  end
+  
   test "Encode bytes" do
     assert <<51, 58, 1, 2, 3>> == encode(<<1,2,3>>)
   end
