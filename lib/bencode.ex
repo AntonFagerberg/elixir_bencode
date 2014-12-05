@@ -29,8 +29,10 @@ defmodule Bencode do
     %{"size" => size} = Regex.named_captures(~r/^(?<size>[0-9]+):/, data)
     {int_size, _} = Integer.parse(size)
     
-    {_, data} = String.split_at(data, String.length(size) + 1)
-    String.split_at(data, int_size)
+    data
+    |> String.split_at(String.length(size) + 1)
+    |> elem(1)
+    |> String.split_at(int_size)
   end
 
 
@@ -48,10 +50,10 @@ defmodule Bencode do
     decode_p(tail, Map.put(acc, key, value))
   end
   
-  def encode(data) when is_number(data), do: "i#{Integer.to_string(data)}e"
+  def encode(data) when is_number(data), do: "i" <> Integer.to_string(data) <> "e"
   def encode(data) when is_list(data), do: Enum.reduce(data, "l", &(&2 <> encode(&1))) <> "e"
   def encode(data) when is_map(data), do: Enum.reduce(data, "d", &(&2 <> encode(&1))) <> "e"
   def encode({k, v}), do: encode(k) <> encode(v)
-  def encode(data) when is_atom(data), do: encode(Atom.to_string(data))
+  def encode(data) when is_atom(data), do: data |> Atom.to_string |> encode
   def encode(data), do: (data |> String.length |> Integer.to_string) <> ":" <> data
 end
