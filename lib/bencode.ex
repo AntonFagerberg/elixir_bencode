@@ -18,21 +18,18 @@ defmodule Bencode do
 
   defp decode_p("i" <> rest) do
     int_pattern = ~r/(?<num>^(-?[1-9]+[1-9]*|[0-9]+))e(?<tail>.*)/
-
     %{"num" => num, "tail" => tail} = Regex.named_captures(int_pattern, rest)
-    {int, _} = Integer.parse(num)
-
-    {int, tail}
+    
+    {num |> Integer.parse |> elem(0), tail}
   end
 
   defp decode_p(data) do
     %{"size" => size} = Regex.named_captures(~r/^(?<size>[0-9]+):/, data)
-    {int_size, _} = Integer.parse(size)
     
     data
     |> String.split_at(String.length(size) + 1)
     |> elem(1)
-    |> String.split_at(int_size)
+    |> String.split_at(size |> Integer.parse |> elem(0))
   end
 
 
