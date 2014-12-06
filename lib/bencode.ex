@@ -2,14 +2,18 @@ defmodule Bencode do
   def decode!(data) do
     case decode_p(data) do
       {result, ""} -> result
-      {_, tail} -> raise("Unparsed trailing data: #{tail}")
+      _ -> raise("Unparsed trailing data.")
     end
   end
 
   def decode(data) do
-    case decode_p(data) do
-      {result, ""} -> {:ok, result}
-      {_, tail} -> {:error, tail}
+    try do
+      case decode_p(data) do
+        {result, ""} -> {:ok, result}
+        _ -> {:error, :trailingdata}
+      end
+    rescue
+      _ -> {:error, :invalidformat}
     end
   end
 

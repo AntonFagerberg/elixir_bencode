@@ -4,79 +4,111 @@ defmodule BencodeTest do
   import Bencode
 
   test "Decode integer" do
-    assert decode!("i42e") === 42
+    assert {:ok, 42} === decode("i42e")
   end
 
   test "Decode negative integer" do
-    assert decode!("i-42e") === -42
+    assert {:ok, -42} === decode("i-42e")
   end
 
   test "Decode zero integer" do
-    assert decode!("i0e") === 0
+    assert {:ok, 0} === decode("i0e")
   end
 
   test "Decode integer with faulty tail" do
-    assert decode("i123etest") === {:error, "test"}
+    assert {:error, :trailingdata} === decode("i123etest")
   end
 
-  test "Negative zero is not allowed" do
-    assert catch_error(decode!("i-0e")) === {:badmatch, nil}
+  test "Negative zero is not allowed (exception)" do
+    assert {:badmatch, nil} === catch_error(decode!("i-0e"))
   end
 
-  test "Chars in numbers is not allowed" do
-    assert catch_error(decode!("i1a2e")) === {:badmatch, nil}
+  test "Chars in numbers is not allowed (exception)" do
+    assert {:badmatch, nil} === catch_error(decode!("i1a2e"))
   end
 
   test "Decode string with faulty tail" do
-    assert decode("4:spamtest") === {:error, "test"}
+    assert {:error, :trailingdata} === decode("4:spamtest")
   end
 
   test "Decode empty string" do
-    assert decode!("0:") === ""
+    assert {:ok, ""} === decode("0:")
   end
 
   test "Decode empty string with faulty tail" do
-    assert decode("0:test") === {:error, "test"}
+    assert {:error, :trailingdata} === decode("0:test")
+  end
+  
+  test "Decode invalid integer" do
+    assert {:error, :invalidformat} === decode("i2")
+  end
+  
+  test "Decode too short string" do
+    assert {:error, :invalidformat} === decode("5:spam")
   end
 
   test "Decode bytes" do
-    assert <<123, 2, 5>> == decode!("3:" <> <<123, 2, 5>>)
+    assert {:ok, <<123, 2, 5>>} == decode("3:" <> <<123, 2, 5>>)
   end
 
   test "Decode list with strings" do
-    assert ["ham", "spam"] === decode!("l3:ham4:spame")
+    assert {:ok, ["ham", "spam"]} === decode("l3:ham4:spame")
   end
 
   test "Decode list with ints" do
-    assert [12, 45] === decode!("li12ei45ee")
+    assert {:ok, [12, 45]} === decode("li12ei45ee")
   end
 
   test "Decode list with string and int" do
-    assert ["spam", 42] === decode!("l4:spami42ee")
+    assert {:ok, ["spam", 42]} === decode("l4:spami42ee")
   end
 
   test "Decode list with nested string and int" do
-    assert ["spam", 42, ["ham", 56, ["clam", 89]]] === decode!("l4:spami42el3:hami56el4:clami89eeee")
+    assert {:ok, ["spam", 42, ["ham", 56, ["clam", 89]]]} === decode("l4:spami42el3:hami56el4:clami89eeee")
   end
 
   test "Decode map with int key values" do
-    assert %{1 => 2, 3 => 4} === decode!("di1ei2ei3ei4ee")
+    assert {:ok, %{1 => 2, 3 => 4}} === decode("di1ei2ei3ei4ee")
   end
 
   test "Decode map with mixed key values" do
-    assert %{"spam" => 1, 2 => "ham"} === decode!("d4:spami1ei2e3:hame")
+    assert {:ok, %{"spam" => 1, 2 => "ham"}} === decode("d4:spami1ei2e3:hame")
   end
 
   test "Decode nested map" do
-    assert %{%{1 => 2} => %{"ab" => "cd"}} === decode!("ddi1ei2eed2:ab2:cdee")
+    assert {:ok, %{%{1 => 2} => %{"ab" => "cd"}}} === decode("ddi1ei2eed2:ab2:cdee")
   end
 
   test "Decode complex map structure" do
-    assert %{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]} === decode!("dli1ei2ee4:woot4:spami1ei2el4:spami42el3:hami56el4:clami89eeeee")
+    assert {:ok, %{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]}} === decode("dli1ei2ee4:woot4:spami1ei2el4:spami42el3:hami56el4:clami89eeeee")
   end
 
   test "Decode complex list structure" do
-    assert [%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}] === decode!("ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee")
+    assert {:ok, [%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}]} === decode("ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee")
+  end
+  
+  test "Decode empty list" do
+    assert {:ok, []} === decode("le")
+  end
+  
+  test "Decode empty map" do
+    assert {:ok, %{}} === decode("de")
+  end
+  
+  test "Decode faulty list" do
+    assert {:error, :invalidformat} === decode("li2e")
+  end
+  
+  test "Decode faulty map" do
+    assert {:error, :invalidformat} === decode("di2e")
+  end
+  
+  test "Decode list with tail" do
+    assert {:error, :trailingdata} === decode("lei")
+  end
+  
+  test "Decode map with tail" do
+    assert {:error, :trailingdata} === decode("dei")
   end
   
   test "Encode integer" do
