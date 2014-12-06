@@ -17,24 +17,33 @@ defmodule Bencode do
   defp decode_p("d" <> rest), do: decode_p(rest, %{})
 
   defp decode_p("i" <> rest) do
-    int_pattern = ~r/(?<num>^(-?[1-9]+[1-9]*|[0-9]+))e(?<tail>.*)/
-    %{"num" => num, "tail" => tail} = Regex.named_captures(int_pattern, rest)
+    int_pattern = ~r/^(?<num>(-?[1-9]+[1-9]*|[0-9]+))e/
+    %{"num" => num} = Regex.named_captures(int_pattern, rest)
     
-    {num |> Integer.parse |> elem(0), tail}
-  end
+    int = num |> Integer.parse |> elem(0)
+    
+    offset = String.length(num) + 1
+    tail = binary_part(rest, offset, byte_size(rest) - offset)
 
+    {int, tail}
+  end
+  
   defp decode_p(data) do
     %{"size" => size} = Regex.named_captures(~r/^(?<size>[0-9]+):/, data)
     
-    data
-    |> String.split_at(String.length(size) + 1)
-    |> elem(1)
-    |> String.split_at(size |> Integer.parse |> elem(0))
+    int = size |> Integer.parse |> elem(0)
+    prefix = String.length(size) + 1
+    
+    string = binary_part(data, prefix, int)
+    
+    offset = prefix + int
+    tail = binary_part(data, offset, byte_size(data) - offset)
+    
+    {string, tail}
   end
 
-
   defp decode_p("e" <> rest, acc) when is_list(acc), do: {Enum.reverse(acc), rest}
-  defp decode_p("e" <> rest, acc), do: {acc, rest}
+  defp decode_p("e" <> rest, acc) when is_map(acc), do: {acc, rest}
 
   defp decode_p(rest, acc) when is_list(acc) do
     {value, tail} = decode_p(rest)
