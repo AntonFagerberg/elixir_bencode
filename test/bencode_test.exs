@@ -16,7 +16,7 @@ defmodule BencodeTest do
   end
 
   test "Decode integer with faulty tail" do
-    assert {:error, :trailingdata} === decode("i123etest")
+    assert {:error, :trailing_data} === decode("i123etest")
   end
 
   test "Negative zero is not allowed (exception)" do
@@ -28,7 +28,7 @@ defmodule BencodeTest do
   end
 
   test "Decode string with faulty tail" do
-    assert {:error, :trailingdata} === decode("4:spamtest")
+    assert {:error, :trailing_data} === decode("4:spamtest")
   end
 
   test "Decode empty string" do
@@ -36,15 +36,15 @@ defmodule BencodeTest do
   end
 
   test "Decode empty string with faulty tail" do
-    assert {:error, :trailingdata} === decode("0:test")
+    assert {:error, :trailing_data} === decode("0:test")
   end
   
   test "Decode invalid integer" do
-    assert {:error, :invalidformat} === decode("i2")
+    assert {:error, :invalid_format} === decode("i2")
   end
   
   test "Decode too short string" do
-    assert {:error, :invalidformat} === decode("5:spam")
+    assert {:error, :invalid_format} === decode("5:spam")
   end
 
   test "Decode bytes" do
@@ -96,60 +96,72 @@ defmodule BencodeTest do
   end
   
   test "Decode faulty list" do
-    assert {:error, :invalidformat} === decode("li2e")
+    assert {:error, :invalid_format} === decode("li2e")
   end
   
   test "Decode faulty map" do
-    assert {:error, :invalidformat} === decode("di2e")
+    assert {:error, :invalid_format} === decode("di2e")
   end
   
   test "Decode list with tail" do
-    assert {:error, :trailingdata} === decode("lei")
+    assert {:error, :trailing_data} === decode("lei")
   end
   
   test "Decode map with tail" do
-    assert {:error, :trailingdata} === decode("dei")
+    assert {:error, :trailing_data} === decode("dei")
   end
   
-  test "Encode integer" do
-    assert "i42e" === encode(42)
+  test "encode integer" do
+    assert "i42e" === encode!(42)
   end
   
-  test "Encode string" do
-    assert "4:spam" === encode("spam")
+  test "encode string" do
+    assert "4:spam" === encode!("spam")
   end
   
-  test "Encode atom" do
-    assert "4:spam" === encode(:spam)
+  test "encode atom" do
+    assert "4:spam" === encode!(:spam)
   end
   
-  test "Encode bytes" do
-    assert <<51, 58, 1, 2, 3>> == encode(<<1,2,3>>)
+  test "encode bytes" do
+    assert <<51, 58, 1, 2, 3>> == encode!(<<1,2,3>>)
   end
   
-  test "Encode list with string and int" do
-    assert "l4:spami42ee" === encode(["spam", 42])
+  test "encode list with string and int" do
+    assert "l4:spami42ee" === encode!(["spam", 42])
   end
   
-  test "Encode map with mixed key values" do
-    assert "di2e3:ham4:spami1ee" === encode(%{"spam" => 1, 2 => "ham"})
+  test "encode map with mixed key values" do
+    assert "di2e3:ham4:spami1ee" === encode!(%{"spam" => 1, 2 => "ham"})
   end
   
-  test "Encode complex map structure" do
-    assert "di2el4:spami42el3:hami56el4:clami89eeeeli1ei2ee4:woot4:spami1ee" === encode(%{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]})
+  test "encode complex map structure" do
+    assert "di2el4:spami42el3:hami56el4:clami89eeeeli1ei2ee4:woot4:spami1ee" === encode!(%{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]})
   end
   
-  test "Encode complex list structure" do
-    assert "ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee" === encode([%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}])
+  test "encode complex list structure" do
+    assert "ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee" === encode!([%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}])
   end
   
-  test "Encode and decode complex map structure" do
+  test "encode and decode complex map structure" do
     data = [%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}]
-    assert data == data |> encode |> decode!
+    assert data == data |> encode! |> decode!
   end
   
-  test "Encode and decode list structure" do
+  test "encode and decode list structure" do
     data = %{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]}
-    assert data == data |> encode |> decode!
+    assert data == data |> encode! |> decode!
+  end
+  
+  test "encode with :ok tuple" do
+    assert {:ok, "ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee"} === encode([%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}])
+  end
+  
+  test "encode invalid input with :error tuple" do
+    assert {:error, :invalid_format} === Bencode.encode(2.0)
+  end
+  
+  test "encode invalid input with exception" do
+    assert_raise(ArgumentError, fn -> Bencode.encode!(2.0) end)
   end
 end

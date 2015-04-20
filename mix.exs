@@ -3,28 +3,23 @@ defmodule ElixirBencode.Mixfile do
 
   def project do
     [app: :elixir_bencode,
-     version: "0.0.1",
+     version: "1.0.0",
      elixir: "~> 1.0",
+     description: "Bencode encoder / decoder in Elixir.",
      deps: deps]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    []
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type `mix help deps` for more examples and options
   defp deps do
     []
+  end
+  
+  defp package do
+    [contributors: ["Anton Fagerberg"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/AntonFagerberg/elixir_bencode"}]
   end
 end
