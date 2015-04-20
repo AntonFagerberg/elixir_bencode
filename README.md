@@ -52,3 +52,7 @@ Bencode.decode!("d5:hello5:worlde")
 Bencode.decode("4:spam")
 {:ok, "spam"}
 ```
+
+## Copyright
+
+Copyright (c) 2014 Anton Fagerberg. See [LICENSE](LICENSE) for further details
