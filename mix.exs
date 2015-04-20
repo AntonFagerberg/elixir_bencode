@@ -6,6 +6,7 @@ defmodule ElixirBencode.Mixfile do
      version: "1.0.0",
      elixir: "~> 1.0",
      description: "Bencode encoder / decoder in Elixir.",
+     package: package,
      deps: deps]
   end
 

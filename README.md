@@ -3,6 +3,16 @@ Elixir Bencode
 
 Bencode decoder / encoder using Elixir data structures.
 
+## Installation
+Add it to to your `mix.exs` dependencies:
+
+```elixir
+defp deps do
+  [{:elixir_bencode, "~> 1.0.0"}]
+end
+```
+
+## Examples
 ```elixir
 ## Encode strings (with thrown exceptions)
 Bencode.encode!("hello world")
