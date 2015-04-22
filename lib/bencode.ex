@@ -16,7 +16,7 @@ defmodule Bencode do
 
   ## Encode maps
       Bencode.encode!(%{"a" => 1, 2 => "b"})
-      #"di2e1:b1:ai1ee"
+      "di2e1:b1:ai1ee"
 
   ## Encode Dicts
       Bencode.encode!(HashDict.new |> Dict.put :hello, :world)
