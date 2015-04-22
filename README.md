@@ -3,6 +3,8 @@ Elixir Bencode
 
 Bencode decoder / encoder using Elixir data structures.
 
+[Documentation for Elixir Bencode is available online](http://hexdocs.pm/elixir_bencode/)
+
 ## Installation
 Add it to to your `mix.exs` dependencies:
 
