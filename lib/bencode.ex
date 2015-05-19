@@ -104,7 +104,7 @@ defmodule Bencode do
     int = num |> Integer.parse |> elem(0)
     
     offset = String.length(num) + 1
-    tail = binary_part(rest, offset, byte_size(rest) - offset)
+    tail = String.slice rest, offset, String.length(rest) - offset
 
     {int, tail}
   end
@@ -114,11 +114,11 @@ defmodule Bencode do
     
     int = size |> Integer.parse |> elem(0)
     prefix = String.length(size) + 1
-    
-    string = binary_part(data, prefix, int)
+
+    string = String.slice data, prefix, int
     
     offset = prefix + int
-    tail = binary_part(data, offset, byte_size(data) - offset)
+    tail = String.slice data, offset, String.length(data) - offset
     
     {string, tail}
   end
@@ -151,7 +151,7 @@ defmodule Bencode do
   def encode!(data) when is_map(data), do: Enum.reduce(data, "d", &(&2 <> encode!(&1))) <> "e"  
   def encode!(data) when is_atom(data), do: data |> Atom.to_string |> encode!
   def encode!({k, v}), do: encode!(k) <> encode!(v)
-  def encode!(data), do: (data |> byte_size |> Integer.to_string) <> ":" <> data
+  def encode!(data), do: (data |> String.length |> Integer.to_string) <> ":" <> data
   
   @doc """
   Encode Elixir data structures to a Bencode bitstring.
