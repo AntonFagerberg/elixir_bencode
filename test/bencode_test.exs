@@ -111,57 +111,69 @@ defmodule BencodeTest do
     assert {:error, :trailing_data} === decode("dei")
   end
   
-  test "encode integer" do
+  test "Decode torrent file" do
+    {status, result} = File.read!("test/torrent/debian.torrent") |> decode
+    assert status == :ok
+    assert result["announce"] == "http://bttracker.debian.org:6969/announce"
+    assert result["comment"] == "\"Debian CD from cdimage.debian.org\""
+    assert result["creation date"] == 1429970623
+    assert result["httpseeds"] == ["http://cdimage.debian.org/cdimage/release/8.0.0/iso-cd/debian-8.0.0-amd64-CD-1.iso", "http://cdimage.debian.org/cdimage/archive/8.0.0/iso-cd/debian-8.0.0-amd64-CD-1.iso"]
+    assert result["info"]["length"] == 657457152
+    assert result["info"]["name"] == "debian-8.0.0-amd64-CD-1.iso"
+    assert result["info"]["piece length"] == 524288
+  end
+  
+  test "Encode integer" do
     assert "i42e" === encode!(42)
   end
   
-  test "encode string" do
+  test "Encode string" do
     assert "4:spam" === encode!("spam")
   end
   
-  test "encode atom" do
+  test "Encode atom" do
     assert "4:spam" === encode!(:spam)
   end
   
-  test "encode bytes" do
+  test "Encode bytes" do
     assert <<51, 58, 1, 2, 3>> == encode!(<<1,2,3>>)
   end
   
-  test "encode list with string and int" do
+  test "Encode list with string and int" do
     assert "l4:spami42ee" === encode!(["spam", 42])
   end
   
-  test "encode map with mixed key values" do
+  test "Encode map with mixed key values" do
     assert "di2e3:ham4:spami1ee" === encode!(%{"spam" => 1, 2 => "ham"})
   end
   
-  test "encode complex map structure" do
+  test "Encode complex map structure" do
     assert "di2el4:spami42el3:hami56el4:clami89eeeeli1ei2ee4:woot4:spami1ee" === encode!(%{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]})
   end
   
-  test "encode complex list structure" do
+  test "Encode complex list structure" do
     assert "ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee" === encode!([%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}])
   end
   
-  test "encode and decode complex map structure" do
+  test "Encode and decode complex map structure" do
     data = [%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}]
     assert data == data |> encode! |> decode!
   end
   
-  test "encode and decode list structure" do
+  test "Encode and decode list structure" do
     data = %{[1,2] => "woot", "spam" => 1, 2 => ["spam", 42, ["ham", 56, ["clam", 89]]]}
     assert data == data |> encode! |> decode!
   end
   
-  test "encode with :ok tuple" do
+  test "Encode with :ok tuple" do
     assert {:ok, "ldi1ei2e2:ab2:cdedi1ei2e2:ab2:cdee"} === encode([%{1 => 2, "ab" => "cd"}, %{1 => 2, "ab" => "cd"}])
   end
   
-  test "encode invalid input with :error tuple" do
+  test "Encode invalid input with :error tuple" do
     assert {:error, :invalid_format} === Bencode.encode(2.0)
   end
   
-  test "encode invalid input with exception" do
+  test "Encode invalid input with exception" do
     assert_raise(ArgumentError, fn -> Bencode.encode!(2.0) end)
   end
 end
