@@ -38,6 +38,10 @@ defmodule BencodeTest do
   test "Decode empty string with faulty tail" do
     assert {:error, :trailing_data} === decode("0:test")
   end
+
+  test "Decode unicode string" do
+    assert {:ok, "exposé"} === decode("6:exposé")
+  end
   
   test "Decode invalid integer" do
     assert {:error, :invalid_format} === decode("i2")
@@ -110,13 +114,17 @@ defmodule BencodeTest do
   test "Decode map with tail" do
     assert {:error, :trailing_data} === decode("dei")
   end
-  
+
   test "encode integer" do
     assert "i42e" === encode!(42)
   end
   
   test "encode string" do
     assert "4:spam" === encode!("spam")
+  end
+
+  test "encode unicode string" do
+    assert "6:exposé" === encode!("exposé")
   end
   
   test "encode atom" do
